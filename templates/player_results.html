@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OW2 Stats - Player Stats</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        .action-buttons {
+            display: none; /* Hide action buttons by default */
+        }
+    </style>
+</head>
+
+<body>
+<div class="container-fluid bg-dark text-light p-5">
+    <div class="container bg-dark p-5">
+        <h1 class="display-4">Overwatch 2 Stats</h1>
+        <p class="lead">Player Stats</p>
+        <hr>
+
+        <form method='POST' action="{{ url_for('search_player')}}" class="d-flex flex-wrap align-items-end">
+
+            <!-- Player ID input -->
+            <div class="form-group me-2 mb-3" style="flex-grow: 1; max-width: 300px;">
+                <label for="user_id" class="form-label">Search for a player</label>
+                <input type="text" class="form-control" id="user_id" name="user_id">
+            </div>
+
+            <!-- Player radio -->
+            <div class="form-check form-check-inline mb-3 me-3">
+                <input class="form-check-input" type="radio" id="filter_player" name="filter_option" value="player" {% if selected_filter == 'player' %}checked{% endif %}>
+                <label class="form-check-label" for="filter_player">Player Stats</label>
+            </div>
+
+            <!-- Matches radio -->
+            <div class="form-check form-check-inline mb-3 me-3">
+                <input class="form-check-input" type="radio" id="filter_matches" name="filter_option" value="matches" {% if selected_filter == 'matches' %}checked{% endif %}>
+                <label class="form-check-label" for="filter_matches">Matches</label>
+            </div>
+
+            <!-- Map dropdown -->
+            <div class="form-group mb-3 me-3">
+                <label for="map_select" class="form-label">Map</label>
+                <select class="form-select" id="map_select" name="map_select">
+                    <option value="" {% if selected_map == "" %}selected{% endif %}>All Maps</option>
+                    <option value="King's Row" {% if selected_map == "King's Row" %}selected{% endif %}>King's Row</option>
+                    <option value="Watchpoint: Gibraltar" {% if selected_map == "Watchpoint: Gibraltar" %}selected{% endif %}>Watchpoint: Gibraltar</option>
+                    <option value="Hollywood" {% if selected_map == "Hollywood" %}selected{% endif %}>Hollywood</option>
+                    <option value="Eichenwalde" {% if selected_map == "Eichenwalde" %}selected{% endif %}>Eichenwalde</option>
+                </select>
+            </div>
+
+            <!-- Class dropdown -->
+            <div class="form-group mb-3 me-3">
+                <label for="class_select" class="form-label">Class</label>
+                <select class="form-select" id="class_select" name="class_select">
+                    <option value="" {% if selected_class == "" %}selected{% endif %}>All Classes</option>
+                    <option value="Tank" {% if selected_class == "Tank" %}selected{% endif %}>Tank</option>
+                    <option value="Damage" {% if selected_class == "Damage" %}selected{% endif %}>Damage</option>
+                    <option value="Healer" {% if selected_class == "Healer" %}selected{% endif %}>Healer</option>
+                </select>
+            </div>
+
+            <!-- Rank dropdown -->
+            <div class="form-group mb-3 me-3">
+                <label for="rank_select" class="form-label">Rank</label>
+                <select class="form-select" id="rank_select" name="rank_select">
+                    <option value="" {% if selected_rank == "" %}selected{% endif %}>All Ranks</option>
+                    <option value="Bronze" {% if selected_rank == "Bronze" %}selected{% endif %}>Bronze</option>
+                    <option value="Silver" {% if selected_rank == "Silver" %}selected{% endif %}>Silver</option>
+                    <option value="Gold" {% if selected_rank == "Gold" %}selected{% endif %}>Gold</option>
+                    <option value="Platinum" {% if selected_rank == "Platinum" %}selected{% endif %}>Platinum</option>
+                    <option value="Diamond" {% if selected_rank == "Diamond" %}selected{% endif %}>Diamond</option>
+                    <option value="Master" {% if selected_rank == "Master" %}selected{% endif %}>Master</option>
+                    <option value="Grandmaster" {% if selected_rank == "Grandmaster" %}selected{% endif %}>Grandmaster</option>
+                </select>
+            </div>
+
+            <!-- Submit button -->
+            <button type="submit" class="btn btn-primary mb-3">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <!-- Controls above the table -->
+    <div class="d-flex justify-content-between align-items-center mb-3" style="width: 60%; margin: 0 auto;">
+        <button id="editToggleBtn" class="btn btn-secondary">Edit</button>
+        <button id="addPlayerBtn" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPlayerModal">Add New Player</button>
+    </div>
+
+    <table class="table table-bordered table-hover mx-auto" style="width: 60%;">
+        <thead>
+            <tr>
+                <th scope="col">Player</th>
+                <th scope="col">Most Played Character</th>
+                <th scope="col">Average KDA</th>
+                <th scope="col">Winrate</th>
+                <th scope="col">Rank</th>
+                <th scope="col" style="width:120px;">Action</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for player in player_data %}
+            <tr>
+                <th scope="row">{{ player[0] }}</th>
+                <td>{{ player[1] }}</td>
+                <td>{{ player[2] }}</td>
+                <td>{{ player[3] }}</td>
+                <td>{{ player[4] }}</td>
+                <td class="text-center">
+                    <!-- Action buttons, hidden initially -->
+                    <div class="action-buttons">
+                        <!-- Update button triggers update modal -->
+                        <button type="button" class="btn btn-primary btn-sm updateBtn" 
+                                data-player-id="{{ player[0] }}" 
+                                data-most-played-hero="{{ player[1] }}" 
+                                data-average-kda="{{ player[2] }}" 
+                                data-win-rate="{{ player[3] }}" 
+                                data-rank="{{ player[4] }}"
+                                data-bs-toggle="modal" data-bs-target="#updatePlayerModal">
+                            Update
+                        </button>
+                        <!-- Delete button triggers modal -->
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-player-id="{{ player[0] }}">
+                            -
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="deleteForm" method="POST" action="">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete this player?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Yes, delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Player Modal -->
+<div class="modal fade" id="addPlayerModal" tabindex="-1" aria-labelledby="addPlayerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('add_player') }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addPlayerModalLabel">Add New Player</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="new_player_id" class="form-label">Player ID (Name#1234)</label>
+            <input type="text" class="form-control" id="new_player_id" name="player_id" required>
+          </div>
+          <div class="mb-3">
+            <label for="new_most_played_hero" class="form-label">Most Played Hero</label>
+            <input type="text" class="form-control" id="new_most_played_hero" name="most_played_hero" required>
+          </div>
+          <div class="mb-3">
+            <label for="new_average_KDA" class="form-label">Average KDA</label>
+            <input type="number" step="0.1" class="form-control" id="new_average_KDA" name="average_KDA" required>
+          </div>
+          <div class="mb-3">
+            <label for="new_win_rate" class="form-label">Win Rate</label>
+            <input type="number" step="0.01" class="form-control" id="new_win_rate" name="win_rate" required>
+          </div>
+          <div class="mb-3">
+            <label for="new_rank" class="form-label">Rank</label>
+            <select class="form-select" id="new_rank" name="rank" required>
+              <option value="Bronze">Bronze</option>
+              <option value="Silver">Silver</option>
+              <option value="Gold">Gold</option>
+              <option value="Platinum">Platinum</option>
+              <option value="Diamond">Diamond</option>
+              <option value="Master">Master</option>
+              <option value="Grandmaster">Grandmaster</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">Add Player</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Update Player Modal -->
+<div class="modal fade" id="updatePlayerModal" tabindex="-1" aria-labelledby="updatePlayerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="updateForm" method="POST" action="">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updatePlayerModalLabel">Update Player</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Player ID Display only -->
+          <div class="mb-3">
+            <label for="update_player_id" class="form-label">Player ID</label>
+            <input type="text" class="form-control" id="update_player_id" name="player_id" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="update_most_played_hero" class="form-label">Most Played Hero</label>
+            <input type="text" class="form-control" id="update_most_played_hero" name="most_played_hero" required>
+          </div>
+          <div class="mb-3">
+            <label for="update_average_KDA" class="form-label">Average KDA</label>
+            <input type="number" step="0.1" class="form-control" id="update_average_KDA" name="average_KDA" required>
+          </div>
+          <div class="mb-3">
+            <label for="update_win_rate" class="form-label">Win Rate</label>
+            <input type="number" step="0.01" class="form-control" id="update_win_rate" name="win_rate" required>
+          </div>
+          <div class="mb-3">
+            <label for="update_rank" class="form-label">Rank</label>
+            <select class="form-select" id="update_rank" name="rank" required>
+              {% set ranks = ["Bronze","Silver","Gold","Platinum","Diamond","Master","Grandmaster"] %}
+              {% for r in ranks %}
+              <option value="{{r}}">{{r}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Player</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteForm = document.getElementById('deleteForm');
+    const editToggleBtn = document.getElementById('editToggleBtn');
+    const actionButtons = document.querySelectorAll('.action-buttons');
+    const updatePlayerModal = document.getElementById('updatePlayerModal');
+    const updateForm = document.getElementById('updateForm');
+
+    let editMode = false;
+
+    // Toggle edit mode
+    editToggleBtn.addEventListener('click', () => {
+        editMode = !editMode;
+        actionButtons.forEach(ab => {
+            ab.style.display = editMode ? 'inline-block' : 'none';
+        });
+        editToggleBtn.textContent = editMode ? 'Cancel' : 'Edit';
+    });
+
+    // Handle delete modal
+    deleteModal.addEventListener('show.bs.modal', (event) => {
+        const button = event.relatedTarget; // Button that triggered the modal
+        const playerId = button.getAttribute('data-player-id');
+        deleteForm.action = `/delete_player/${encodeURIComponent(playerId)}`;
+    });
+
+    // Handle update modal
+    updatePlayerModal.addEventListener('show.bs.modal', (event) => {
+        const button = event.relatedTarget; // Button that triggered modal
+        const playerId = button.getAttribute('data-player-id');
+        const hero = button.getAttribute('data-most-played-hero');
+        const kda = button.getAttribute('data-average-kda');
+        const winRate = button.getAttribute('data-win-rate');
+        const rank = button.getAttribute('data-rank');
+
+        // Populate form fields
+        document.getElementById('update_player_id').value = playerId;
+        document.getElementById('update_most_played_hero').value = hero;
+        document.getElementById('update_average_KDA').value = kda;
+        document.getElementById('update_win_rate').value = winRate;
+
+        const updateRankSelect = document.getElementById('update_rank');
+        for (let i=0; i<updateRankSelect.options.length; i++){
+            if(updateRankSelect.options[i].value == rank){
+                updateRankSelect.selectedIndex = i;
+                break;
+            }
+        }
+
+        // Set the action for update
+        updateForm.action = `/update_player/${encodeURIComponent(playerId)}`;
+    });
+});
+</script>
+</body>
+</html>

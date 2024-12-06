@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Player Match Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+          crossorigin="anonymous">
+</head>
+<body>
+    <div class="container-fluid bg-dark text-light p-5">
+        <div class="container bg-dark p-5">
+            <h1 class="display-4">Overwatch 2 Stats</h1>
+            <p class="lead">This is a simple hero stats page for Overwatch 2</p>
+            <hr>
+            <p>To-add</p>
+    
+            <form method='POST' action="{{ url_for('search_player')}}" class="d-flex flex-wrap align-items-end">
+    
+                <!-- Player ID input -->
+                <div class="form-group me-2 mb-3" style="flex-grow: 1; max-width: 300px;">
+                    <label for="user_id" class="form-label">Search for a player</label>
+                    <input type="text" class="form-control" id="user_id" name="user_id">
+                </div>
+    
+                 <!-- Player radio -->
+                 <div class="form-check form-check-inline mb-3 me-3">
+                    <input class="form-check-input" type="radio" id="filter_player" name="filter_option" value="player" checked>
+                    <label class="form-check-label" for="filter_player">Player Stats</label>
+                </div>
+    
+                <!-- Matches radio -->
+                <div class="form-check form-check-inline mb-3 me-3">
+                    <input class="form-check-input" type="radio" id="filter_matches" name="filter_option" value="matches">
+                    <label class="form-check-label" for="filter_matches">Matches</label>
+                </div>
+    
+                <!-- Map dropdown -->
+                <div class="form-group mb-3 me-3">
+                    <label for="map_select" class="form-label">Map</label>
+                    <select class="form-select" id="map_select" name="map_select">
+                        <option value="" selected>All Maps</option>
+                        <option value="King's Row">King's Row</option>
+                        <option value="Watchpoint: Gibraltar">Watchpoint: Gibraltar</option>
+                        <option value="Hollywood">Hollywood</option>
+                        <option value="Eichenwalde">Eichenwalde</option>
+                        <!-- Add more maps as needed -->
+                    </select>
+                </div>
+    
+                <!-- Class dropdown -->
+                <div class="form-group mb-3 me-3">
+                    <label for="class_select" class="form-label">Class</label>
+                    <select class="form-select" id="class_select" name="class_select">
+                        <option value="" selected>All Classes</option>
+                        <option value="Tank">Tank</option>
+                        <option value="Damage">Damage</option>
+                        <option value="Healer">Healer</option>
+                    </select>
+                </div>
+    
+                <!-- Rank dropdown -->
+                <div class="form-group mb-3 me-3">
+                    <label for="rank_select" class="form-label">Rank</label>
+                    <select class="form-select" id="rank_select" name="rank_select">
+                        <option value="" selected>All Ranks</option>
+                        <option value="Bronze">Bronze</option>
+                        <option value="Silver">Silver</option>
+                        <option value="Gold">Gold</option>
+                        <option value="Platinum">Platinum</option>
+                        <option value="Diamond">Diamond</option>
+                        <option value="Master">Master</option>
+                        <option value="Grandmaster">Grandmaster</option>
+                    </select>
+                </div>
+    
+                <!-- Submit button -->
+                <button type="submit" class="btn btn-primary mb-3">Search</button>
+            </form>
+        </div>
+    </div>
+    
+<div class="container mt-4">
+    <table class="table table-bordered table-hover mx-auto" style="width: 60%;">
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Player ID</th>
+                <th scope="col">Match ID</th>
+                <th scope="col">Map</th>
+                <th scope="col">Hero Name</th>
+                <th scope="col">Class</th>
+                <th scope="col">Kills</th>
+                <th scope="col">Deaths</th>
+                <th scope="col">Assists</th>
+                <th scope="col">Damage Done</th>
+                <th scope="col">Damage Taken</th>
+                <th scope="col">Healing Done</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for detail in player_match_data %}
+            <tr>
+                <td>{{detail[0]}}</td>
+                <td>{{detail[1]}}</td>
+                <td>{{detail[2]}}</td>
+                <td>{{detail[3]}}</td>
+                <td>{{detail[4]}}</td>
+                <td>{{detail[5]}}</td>
+                <td>{{detail[6]}}</td>
+                <td>{{detail[7]}}</td>
+                <td>{{detail[8]}}</td>
+                <td>{{detail[9]}}</td>
+                <td>{{detail[10]}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+</body>
+</html>
