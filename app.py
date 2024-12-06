@@ -31,7 +31,8 @@ def search_player():
     )
     matches_data = query_matches(
         user_id=user_id if user_id else None,
-        map_name=selected_map
+        map_name=selected_map,
+        selected_rank=selected_rank
     )
 
     if filter_option == 'player':
@@ -243,7 +244,7 @@ def query_player_details(user_id=None, hero_class=None, rank=None, map_name=None
         else:
             conditions.append("player_id LIKE ?")
             params.append(user_id + "#____")
-
+    print(hero_class)
     if hero_class and hero_class != "":
         conditions.append("most_played_hero IN (SELECT name FROM heroes WHERE class = ?)")
         params.append(hero_class)
@@ -265,6 +266,7 @@ def query_player_details(user_id=None, hero_class=None, rank=None, map_name=None
     if conditions:
         base_query += " WHERE " + " AND ".join(conditions)
 
+    print(base_query, params)
     c.execute(base_query, params)
     player_info = c.fetchall()
     conn.close()
@@ -279,7 +281,7 @@ def query_all_players():
     return players
 
 
-def query_matches(user_id=None, map_name=None):
+def query_matches(user_id=None, map_name=None, selected_rank=None):
     conn = sqlite3.connect(db_locale)
     c = conn.cursor()
 
@@ -298,6 +300,10 @@ def query_matches(user_id=None, map_name=None):
     if map_name and map_name != "":
         conditions.append("map_name = ?")
         params.append(map_name)
+    
+    if selected_rank and selected_rank != "":
+        conditions.append("game_rank = ?")
+        params.append(selected_rank)
 
     if conditions:
         base_query += " WHERE " + " AND ".join(conditions)
